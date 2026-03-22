@@ -9,6 +9,11 @@ import os
 from pathlib import Path
 from datetime import date
 
+from dotenv import load_dotenv
+
+# Carrega variáveis do arquivo .env (se existir)
+load_dotenv()
+
 # ---------------------------------------------------------------------------
 # Diretórios do projeto
 # ---------------------------------------------------------------------------
@@ -39,7 +44,7 @@ HTTP_RETRY_WAIT: int = int(os.getenv("HTTP_RETRY_WAIT", "5"))
 # CNES / DATASUS
 # ---------------------------------------------------------------------------
 # API CNES via DATASUS — endpoint público de estabelecimentos
-# Filtra por município de São Paulo (código IBGE 355030) e tipo UBS (tipo 02)
+# Filtra por município de São Paulo (código IBGE 355030) e tipo UBS (tipo 05)
 CNES_BASE_URL: str = os.getenv(
     "CNES_BASE_URL",
     "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos",
