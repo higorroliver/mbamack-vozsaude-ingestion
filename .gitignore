@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment variables
+.env
+
+# Data files (keep .gitkeep only)
+data/raw/cnes/*.csv
+data/raw/cnes/*.parquet
+data/raw/geosampa/*.geojson
+data/raw/geosampa/*.json
+data/raw/geosampa/*.meta.json
+data/raw/ibge/*.csv
+data/raw/ibge/*.json
+data/raw/ipvs/*.csv
+data/raw/ipvs/input/
+data/processed/*
+!data/**/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
