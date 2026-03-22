@@ -8,7 +8,9 @@ Pipeline modular em Python para **extração automatizada** de bases de dados p�
 |-------|-----------|---------|
 | **CNES** (DATASUS) | Estabelecimentos de saúde — UBS de São Paulo | CSV |
 | **GeoSampa** (WFS) | Distritos do município de São Paulo | GeoJSON |
-| **IBGE / SIDRA** | Dados demográficos por município | CSV |
+| **IBGE Localidades** | Distritos oficiais do IBGE (dimensão territorial) | JSON + CSV + Parquet |
+| **IBGE SIDRA** | Demografia: população, domicílios, densidade (tabelas 4714, 4711, 4712) | JSON + CSV + Parquet |
+| **IBGE / SIDRA** (legado) | Dados demográficos por município (tabela única) | CSV |
 | **IPVS** (SEADE) | Índice Paulista de Vulnerabilidade Social | CSV |
 
 ## Estrutura do Projeto
@@ -18,28 +20,35 @@ project/
 │
 ├── app/
 │   ├── config/
-│   │   └── settings.py          # Configurações centrais (URLs, paths, timeouts)
+│   │   └── settings.py                  # Configurações centrais (URLs, paths, timeouts)
 │   ├── extractors/
-│   │   ├── base.py              # Classe base abstrata para extractors
-│   │   ├── cnes_extractor.py    # Extrator CNES / DATASUS
-│   │   ├── geosampa_extractor.py # Extrator GeoSampa (WFS)
-│   │   ├── ibge_extractor.py    # Extrator IBGE / SIDRA
-│   │   └── ipvs_extractor.py    # Extrator IPVS / SEADE
+│   │   ├── base.py                      # Classe base abstrata para extractors
+│   │   ├── cnes_extractor.py            # Extrator CNES / DATASUS
+│   │   ├── geosampa_extractor.py        # Extrator GeoSampa (WFS)
+│   │   ├── ibge_extractor.py            # Extrator IBGE / SIDRA (legado, tabela única)
+│   │   ├── ibge_localidades_extractor.py # Extrator IBGE Localidades (distritos)
+│   │   ├── ibge_sidra_extractor.py      # Extrator IBGE SIDRA (múltiplas tabelas)
+│   │   └── ipvs_extractor.py            # Extrator IPVS / SEADE
 │   ├── loaders/
-│   │   └── file_loader.py       # Funções de persistência (CSV, Parquet)
+│   │   └── file_loader.py               # Funções de persistência (CSV, Parquet)
 │   ├── utils/
-│   │   ├── logger.py            # Logging estruturado
-│   │   ├── http_client.py       # Cliente HTTP com retry (tenacity)
-│   │   └── paths.py             # Utilitários de caminhos e nomes de arquivos
-│   └── main.py                  # Ponto de entrada com argparse
+│   │   ├── logger.py                    # Logging estruturado
+│   │   ├── http_client.py               # Cliente HTTP com retry (tenacity)
+│   │   └── paths.py                     # Utilitários de caminhos e nomes de arquivos
+│   └── main.py                          # Ponto de entrada com argparse
 │
 ├── data/
-│   ├── raw/                     # Dados brutos por fonte
+│   ├── raw/                             # Dados brutos por fonte
 │   │   ├── cnes/
 │   │   ├── geosampa/
 │   │   ├── ibge/
+│   │   │   ├── localidades/             # JSON bruto dos distritos IBGE
+│   │   │   └── sidra/                   # JSON bruto das tabelas SIDRA
 │   │   └── ipvs/
-│   └── processed/               # Dados processados (camada Silver)
+│   └── processed/                       # Dados processados (camada Silver)
+│       └── ibge/
+│           ├── localidades/             # CSV + Parquet tratados dos distritos
+│           └── sidra/                   # CSV + Parquet consolidados do SIDRA
 │
 ├── requirements.txt
 └── README.md
@@ -77,10 +86,12 @@ python -m app.main --source all
 ### Extrair uma fonte específica
 
 ```bash
-python -m app.main --source cnes
-python -m app.main --source geosampa
-python -m app.main --source ibge
-python -m app.main --source ipvs
+python -m app.main --source cnes              # UBS via DATASUS
+python -m app.main --source geosampa           # Distritos via WFS
+python -m app.main --source ibge               # SIDRA tabela única (legado)
+python -m app.main --source ibge_localidades   # Distritos oficiais IBGE
+python -m app.main --source ibge_sidra         # Demografia SIDRA (3 tabelas)
+python -m app.main --source ipvs               # IPVS / SEADE
 ```
 
 ## Configuração
@@ -94,8 +105,13 @@ As configurações ficam em `app/config/settings.py` e podem ser sobrescritas vi
 | `CNES_MUNICIPIO_CODE` | Código IBGE do município | `355030` |
 | `CNES_TIPO_UNIDADE` | Tipo de unidade CNES | `05` |
 | `GEOSAMPA_LAYER` | Camada WFS do GeoSampa | `geoportal:distrito_municipal` |
-| `SIDRA_TABLE` | Tabela do SIDRA | `4714` |
-| `SIDRA_LOCALIDADE` | Código IBGE do município | `3550308` |
+| `IBGE_MUNICIPIO_ID` | Código IBGE do município (Localidades) | `3550308` |
+| `SIDRA_TABLE` | Tabela do SIDRA (legado) | `4714` |
+| `SIDRA_LOCALIDADE` | Código IBGE do município (SIDRA) | `3550308` |
+| `SIDRA_PERIODO` | Período temporal do SIDRA | `last` |
+| `SIDRA_4714_VARIABLES` | Variáveis da tabela 4714 | `allxp` |
+| `SIDRA_4711_VARIABLES` | Variáveis da tabela 4711 | `allxp` |
+| `SIDRA_4712_VARIABLES` | Variáveis da tabela 4712 | `allxp` |
 | `IPVS_DOWNLOAD_URL` | URL de download do IPVS | URL padrão SEADE |
 | `IPVS_INPUT_DIR` | Diretório de entrada manual IPVS | `data/raw/ipvs/input` |
 | `LOG_LEVEL` | Nível de log | `INFO` |
@@ -105,9 +121,9 @@ As configurações ficam em `app/config/settings.py` e podem ser sobrescritas vi
 ```text
 UBS (CNES)
    ↓
-Distrito (GeoSampa)
+Distrito (GeoSampa) ←→ Distritos IBGE (Localidades)
    ↓
-Demografia (IBGE)
+Demografia (IBGE SIDRA: tabelas 4714, 4711, 4712)
    ↓
 Vulnerabilidade (IPVS)
 ```
@@ -116,6 +132,24 @@ Cada extractor herda de `BaseExtractor` e implementa:
 - `extract()` — lógica de extração específica da fonte
 - `save_raw()` — persistência dos dados brutos
 - `run()` — orquestração com logging e tratamento de erros (herdado)
+
+### Módulos IBGE
+
+O IBGE é tratado em dois módulos independentes:
+
+1. **IBGE Localidades** (`ibge_localidades_extractor.py`)
+   - API: `servicodados.ibge.gov.br/api/v1/localidades`
+   - Função: `get_districts_by_municipality(municipio_id)`
+   - Retorna 96 distritos oficiais de São Paulo
+   - Inclui normalização textual para joins futuros
+   - Campos: `id_distrito_ibge`, `nome_distrito_ibge`, `id_municipio_ibge`, `nome_municipio`, `sigla_uf`, `nome_distrito_normalizado`
+
+2. **IBGE SIDRA** (`ibge_sidra_extractor.py`)
+   - API: `apisidra.ibge.gov.br/values`
+   - Tabelas: 4714 (população/área/densidade), 4711 (domicílios), 4712 (domicílios ocupados/moradores/média)
+   - Granularidade: municipal (n6) — registra em log quando distrito não está disponível
+   - Campos: `fonte`, `tabela_sidra`, `ano`, `id_municipio_ibge`, `nome_municipio`, `variavel`, `valor`, `unidade`, `nivel_territorial`
+   - Funções desacopladas: `build_sidra_url()`, `parse_sidra_response()`, `normalize_column_name()`
 
 ## Padrões e Boas Práticas
 

@@ -6,6 +6,8 @@ Uso:
     python -m app.main --source cnes
     python -m app.main --source geosampa
     python -m app.main --source ibge
+    python -m app.main --source ibge_localidades
+    python -m app.main --source ibge_sidra
     python -m app.main --source ipvs
 """
 
@@ -17,6 +19,8 @@ from app.utils.logger import get_logger
 from app.extractors.cnes_extractor import CnesExtractor
 from app.extractors.geosampa_extractor import GeosampaExtractor
 from app.extractors.ibge_extractor import IbgeExtractor
+from app.extractors.ibge_localidades_extractor import IbgeLocalidadesExtractor
+from app.extractors.ibge_sidra_extractor import IbgeSidraExtractor
 from app.extractors.ipvs_extractor import IpvsExtractor
 
 logger = get_logger("main")
@@ -26,6 +30,8 @@ EXTRACTORS: dict[str, type] = {
     "cnes": CnesExtractor,
     "geosampa": GeosampaExtractor,
     "ibge": IbgeExtractor,
+    "ibge_localidades": IbgeLocalidadesExtractor,
+    "ibge_sidra": IbgeSidraExtractor,
     "ipvs": IpvsExtractor,
 }
 
@@ -40,8 +46,10 @@ Exemplos de uso:
   python -m app.main --source all        Executa todas as extrações
   python -m app.main --source cnes       Extrai dados do CNES
   python -m app.main --source geosampa   Extrai distritos do GeoSampa
-  python -m app.main --source ibge       Extrai dados demográficos do IBGE
-  python -m app.main --source ipvs       Extrai dados IPVS
+  python -m app.main --source ibge             Extrai dados demográficos do IBGE (legado)
+  python -m app.main --source ibge_localidades  Extrai distritos via API Localidades IBGE
+  python -m app.main --source ibge_sidra        Extrai demografia via API SIDRA (multiplas tabelas)
+  python -m app.main --source ipvs              Extrai dados IPVS
         """,
     )
     parser.add_argument(

@@ -26,7 +26,13 @@ PROCESSED_DIR: Path = DATA_DIR / "processed"
 CNES_RAW_DIR: Path = RAW_DIR / "cnes"
 GEOSAMPA_RAW_DIR: Path = RAW_DIR / "geosampa"
 IBGE_RAW_DIR: Path = RAW_DIR / "ibge"
+IBGE_LOCALIDADES_RAW_DIR: Path = RAW_DIR / "ibge" / "localidades"
+IBGE_SIDRA_RAW_DIR: Path = RAW_DIR / "ibge" / "sidra"
 IPVS_RAW_DIR: Path = RAW_DIR / "ipvs"
+
+# Subpastas para dados processados
+IBGE_LOCALIDADES_PROCESSED_DIR: Path = PROCESSED_DIR / "ibge" / "localidades"
+IBGE_SIDRA_PROCESSED_DIR: Path = PROCESSED_DIR / "ibge" / "sidra"
 
 # ---------------------------------------------------------------------------
 # Data de extração (usada no nome dos arquivos)
@@ -68,23 +74,52 @@ GEOSAMPA_LAYER: str = os.getenv(
 )
 
 # ---------------------------------------------------------------------------
-# IBGE / SIDRA
+# IBGE — Localidades
 # ---------------------------------------------------------------------------
-# API do SIDRA — Tabela 4714 (população por município — Censo 2022)
+# API de Localidades do IBGE — distritos por município
+# Documentação: https://servicodados.ibge.gov.br/api/docs/localidades
+IBGE_LOCALIDADES_BASE_URL: str = os.getenv(
+    "IBGE_LOCALIDADES_BASE_URL",
+    "https://servicodados.ibge.gov.br/api/v1/localidades",
+)
+# Código IBGE do município de São Paulo (com dígito verificador)
+IBGE_MUNICIPIO_ID: str = os.getenv("IBGE_MUNICIPIO_ID", "3550308")
+
+# ---------------------------------------------------------------------------
+# IBGE / SIDRA — Demografia
+# ---------------------------------------------------------------------------
+# API do SIDRA — dados demográficos (Censo 2022)
 # Documentação: https://apisidra.ibge.gov.br/
 SIDRA_BASE_URL: str = os.getenv(
     "SIDRA_BASE_URL",
     "https://apisidra.ibge.gov.br/values",
 )
-# Tabela padrão: 4714 — População residente, por sexo e idade
-SIDRA_TABLE: str = os.getenv("SIDRA_TABLE", "4714")
 # Município de São Paulo (código IBGE 3550308, com dígito verificador)
 SIDRA_LOCALIDADE: str = os.getenv("SIDRA_LOCALIDADE", "3550308")
-# Variáveis e classificações podem ser ajustadas conforme necessidade
-# Variável 93 = população residente
-SIDRA_VARIABLES: str = os.getenv("SIDRA_VARIABLES", "93")
 # Período: último censo disponível
 SIDRA_PERIODO: str = os.getenv("SIDRA_PERIODO", "last")
+
+# Tabelas prioritárias do SIDRA para o projeto Vozes da Saúde
+# Formato: {tabela_id: {"nome": str, "variaveis": str}}
+# Variáveis: "allxp" = todas as variáveis da tabela
+SIDRA_TABELAS_PRIORITARIAS: dict[str, dict[str, str]] = {
+    "4714": {
+        "nome": "População residente, área territorial e densidade demográfica",
+        "variaveis": os.getenv("SIDRA_4714_VARIABLES", "allxp"),
+    },
+    "4711": {
+        "nome": "Domicílios recenseados",
+        "variaveis": os.getenv("SIDRA_4711_VARIABLES", "allxp"),
+    },
+    "4712": {
+        "nome": "Domicílios particulares permanentes ocupados, moradores e média",
+        "variaveis": os.getenv("SIDRA_4712_VARIABLES", "allxp"),
+    },
+}
+
+# Manter compatibilidade com o extractor legado (ibge_extractor.py)
+SIDRA_TABLE: str = os.getenv("SIDRA_TABLE", "4714")
+SIDRA_VARIABLES: str = os.getenv("SIDRA_VARIABLES", "93")
 
 # ---------------------------------------------------------------------------
 # IPVS / SEADE
