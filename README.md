@@ -93,7 +93,7 @@ As configurações ficam em `app/config/settings.py` e podem ser sobrescritas vi
 | `HTTP_RETRIES` | Número de tentativas | `3` |
 | `CNES_MUNICIPIO_CODE` | Código IBGE do município | `355030` |
 | `CNES_TIPO_UNIDADE` | Tipo de unidade CNES | `05` |
-| `GEOSAMPA_LAYER` | Camada WFS do GeoSampa | `geoportal:deinfo_distrito` |
+| `GEOSAMPA_LAYER` | Camada WFS do GeoSampa | `geoportal:distrito_municipal` |
 | `SIDRA_TABLE` | Tabela do SIDRA | `4714` |
 | `SIDRA_LOCALIDADE` | Código IBGE do município | `3550308` |
 | `IPVS_DOWNLOAD_URL` | URL de download do IPVS | URL padrão SEADE |
