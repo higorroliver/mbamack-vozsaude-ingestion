@@ -59,14 +59,15 @@ class IbgeExtractor(BaseExtractor):
         Monta a URL completa da API SIDRA.
 
         Formato:
-            /t/{tabela}/n6/{localidade}/v/{variáveis}/p/{período}/all
+            /t/{tabela}/n6/{localidade}/v/{variáveis}/p/{período}
         
         Onde:
             - t = tabela
             - n6 = nível geográfico (município)
             - v = variáveis
             - p = período
-            - all = todas as classificações
+        
+        Documentação: https://apisidra.ibge.gov.br/home/ajuda
         """
         url = (
             f"{SIDRA_BASE_URL}"
@@ -74,7 +75,6 @@ class IbgeExtractor(BaseExtractor):
             f"/n6/{self.localidade}"
             f"/v/{self.variables}"
             f"/p/{self.periodo}"
-            f"/all"
         )
         self.logger.info("URL SIDRA montada: %s", url)
         return url

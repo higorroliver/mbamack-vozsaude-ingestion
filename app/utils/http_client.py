@@ -12,7 +12,7 @@ from tenacity import (
     retry,
     stop_after_attempt,
     wait_exponential,
-    retry_if_exception_type,
+    retry_if_exception,
     before_sleep_log,
 )
 
@@ -60,12 +60,18 @@ class HttpClient:
     ) -> requests.Response:
         """Executa uma requisição HTTP com política de retry."""
 
+        def _is_retryable(exc: BaseException) -> bool:
+            """Retorna True se o erro é retentável (5xx, conexão, timeout)."""
+            if isinstance(exc, (requests.ConnectionError, requests.Timeout)):
+                return True
+            if isinstance(exc, requests.HTTPError) and exc.response is not None:
+                return exc.response.status_code >= 500
+            return False
+
         @retry(
             stop=stop_after_attempt(self.retries),
             wait=wait_exponential(multiplier=self.retry_wait, min=2, max=60),
-            retry=retry_if_exception_type(
-                (requests.ConnectionError, requests.Timeout, requests.HTTPError)
-            ),
+            retry=retry_if_exception(_is_retryable),
             before_sleep=before_sleep_log(logger, log_level=20),
             reraise=True,
         )

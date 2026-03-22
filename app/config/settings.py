@@ -64,7 +64,7 @@ GEOSAMPA_WFS_URL: str = os.getenv(
 )
 GEOSAMPA_LAYER: str = os.getenv(
     "GEOSAMPA_LAYER",
-    "geoportal:deinfo_distrito",
+    "geoportal:distrito_municipal",
 )
 
 # ---------------------------------------------------------------------------

@@ -68,11 +68,37 @@ class IpvsExtractor(BaseExtractor):
         )
 
     def _try_download(self) -> pd.DataFrame | None:
-        """Tenta baixar o CSV do IPVS via URL configurada."""
+        """
+        Tenta baixar o CSV do IPVS via URL configurada.
+
+        Nota: o portal do SEADE (repositorio.seade.gov.br) pode bloquear
+        requisições automatizadas via Cloudflare. Nesse caso, o extractor
+        faz fallback para leitura de arquivo local colocado manualmente
+        no diretório IPVS_INPUT_DIR.
+        """
         self.logger.info("Tentando download do IPVS: %s", self.download_url)
         try:
-            response = self.http.get(self.download_url)
-            # Tenta ler como CSV diretamente do conteúdo da resposta
+            # Usa headers de navegador para evitar bloqueio por WAF/Cloudflare
+            browser_headers = {
+                "User-Agent": (
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                ),
+                "Accept": "text/csv,text/plain,*/*;q=0.8",
+                "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            }
+            response = self.http.get(
+                self.download_url, headers=browser_headers
+            )
+
+            content_type = response.headers.get("content-type", "")
+            if "text/html" in content_type:
+                self.logger.warning(
+                    "Resposta do IPVS retornou HTML (possível bloqueio Cloudflare). "
+                    "Tentando arquivo local..."
+                )
+                return None
+
             from io import StringIO
 
             content = response.content.decode("utf-8", errors="replace")
