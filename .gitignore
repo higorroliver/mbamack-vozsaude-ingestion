@@ -30,9 +30,11 @@ data/raw/geosampa/*.json
 data/raw/geosampa/*.meta.json
 data/raw/ibge/*.csv
 data/raw/ibge/*.json
+data/raw/ibge/localidades/
+data/raw/ibge/sidra/
 data/raw/ipvs/*.csv
 data/raw/ipvs/input/
-data/processed/*
+data/processed/
 !data/**/.gitkeep
 
 # OS
