@@ -16,6 +16,8 @@ Notas:
       settings.py ou instanciar com valores diferentes.
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Any
 

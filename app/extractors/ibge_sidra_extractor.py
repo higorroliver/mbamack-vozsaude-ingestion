@@ -20,6 +20,8 @@ Notas:
     - Preparado para expansao futura com outras tabelas do Censo 2022.
 """
 
+from __future__ import annotations
+
 import json
 import re
 import unicodedata

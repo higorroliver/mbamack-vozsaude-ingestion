@@ -6,6 +6,8 @@ Uso:
     logger = get_logger(__name__)
 """
 
+from __future__ import annotations
+
 import logging
 import sys
 
