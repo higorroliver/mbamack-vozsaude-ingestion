@@ -2,6 +2,8 @@
 Utilitários para criação e padronização de caminhos de arquivos.
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from app.config.settings import EXTRACTION_DATE

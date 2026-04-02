@@ -13,6 +13,8 @@ Notas:
     - Pronto para uso futuro em join espacial com coordenadas de UBS.
 """
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
 from typing import Any

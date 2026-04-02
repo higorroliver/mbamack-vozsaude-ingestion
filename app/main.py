@@ -11,6 +11,8 @@ Uso:
     python -m app.main --source ipvs
 """
 
+from __future__ import annotations
+
 import argparse
 import sys
 from pathlib import Path

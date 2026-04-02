@@ -7,6 +7,8 @@ por diferentes extractors ou camadas do pipeline.
 Preparado para futura integração com S3 / Data Lake.
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Any
 

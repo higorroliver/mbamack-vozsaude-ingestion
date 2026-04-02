@@ -5,6 +5,8 @@ Todas as URLs, timeouts, paths e parâmetros configuráveis ficam aqui.
 Para variáveis sensíveis, utilize arquivo .env na raiz do projeto.
 """
 
+from __future__ import annotations
+
 import os
 from pathlib import Path
 from datetime import date
